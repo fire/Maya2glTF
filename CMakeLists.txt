@@ -1,3 +1,55 @@
+# TODO: Cleanup this mess, learn CMake first Peter, even though you hate it.
+# Read https://pabloariasal.github.io/2018/02/19/its-time-to-do-cmake-right/
+
+# https://github.com/pmoulon/DO-CV/blob/master/cmake/PCH.cmake
+macro( add_clang_pch _pchTarget _inputHeader _inputModule _extraDefines)
+  # Extract CMAKE_CXX_FLAGS and CMAKE_CXX_FLAGS_XXX for the current configuration XXX.
+  string( TOUPPER "CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}" _build_type_flags_var )
+  set( _flags "${CMAKE_CXX_FLAGS} ${${_build_type_flags_var}}")
+
+  # Convert string of space separated flags into a list.
+  separate_arguments( _flags )
+
+   # Extract definitions set by add_definitions command.
+  get_directory_property( _defines COMPILE_DEFINITIONS )
+  foreach( _define ${_defines} )
+    list( APPEND _flags "-D${_define}" )
+  endforeach()
+
+  message("_extraDefines = ${_extraDefines}")
+ 
+  foreach( _define ${_extraDefines} )
+    list( APPEND _flags "-D${_define}" )
+  endforeach()
+
+  # Extract include directories set by include_directories command.
+  get_directory_property( _includes INCLUDE_DIRECTORIES )
+  foreach( _include ${_includes} )
+    list( APPEND _flags "-I${_include}" )
+  endforeach()
+ 
+  # Helper target that properly triggers recompilation of precompiled header.
+  add_library( ${_pchTarget}_trigger INTERFACE )
+  target_sources(${_pchTarget}_trigger INTERFACE "${_inputHeader}" "${_inputModule}" )
+  
+  # Build precompiled header and copy original header to the build folder - GCC wants it there.
+  add_custom_command( OUTPUT "${_inputHeader}.gch"
+    DEPENDS ${_pchTarget}_trigger
+    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${_inputHeader}" "${_inputHeader}"
+    COMMAND "${CMAKE_COMMAND}" -E remove -f "${_inputHeader}.gch"
+    COMMAND "${CMAKE_CXX_COMPILER}" -std=gnu++1z -o "${_inputHeader}.gch" -x c++-header "${CMAKE_CURRENT_SOURCE_DIR}/${_inputHeader}" ${_flags}
+  )
+  
+  add_custom_target( ${_pchTarget} DEPENDS "${_inputHeader}.gch" )
+
+  set( ${_pchTarget}_outputPCH "${CMAKE_CURRENT_BINARY_DIR}/${_inputHeader}.gch" )
+endmacro()
+
+macro( use_clang_pch _target _pchTarget )
+  add_dependencies( ${_target} ${_pchTarget})
+  set_target_properties( ${_target} PROPERTIES COMPILE_FLAGS "-include-pch ${${_pchTarget}_outputPCH}" )
+endmacro()
+
 cmake_minimum_required(VERSION 3.8)
 
 project(maya2glTF)
@@ -38,27 +90,42 @@ message (STATUS "${BoldMagenta}Using Maya version " ${MAYA_VERSION} "${ColourRes
 
 find_package(Maya REQUIRED)
 
+message("MAYA_COMPILE_DEFINITIONS = ${MAYA_COMPILE_DEFINITIONS}")
+
 include(ExternalProject)
 
-# COLLADA2GLTF
-# We only need to build the GLTF sub-library, hence the SOURCE_SUBDIR
-ExternalProject_Add(COLLADA2GLTF
-  GIT_REPOSITORY https://github.com/WonderMediaProductions/COLLADA2GLTF
+# GLTF
+ExternalProject_Add(GLTF
+  GIT_REPOSITORY https://github.com/WonderMediaProductions/GLTF
   GIT_TAG master
-  PREFIX COLLADA2GLTF
-  SOURCE_SUBDIR GLTF
+  PREFIX GLTF
   INSTALL_DIR
   CMAKE_ARGS
   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-  #CONFIGURE_COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> <SOURCE_DIR>/GLTF  
 )
 
+ExternalProject_Get_Property(GLTF binary_dir)
+message("Using ${binary_dir} as GLTF library folder")
+set(GLTF_LIBRARY_DIR "${binary_dir}") 
+set(GLTF_LIBRARY_PATH "${GLTF_LIBRARY_DIR}/libGLTF.a")
 
-# cpp-linq
-ExternalProject_Add(linq
-  GIT_REPOSITORY https://github.com/coveo/linq.git
+# TODO: Use ExternalProject_Get_Property for include files, and fix GLTF
+set(GLTF_INCLUDE_DIR          "${CMAKE_BINARY_DIR}/GLTF/include")
+set(RAPIDJSON_INCLUDE_DIR     "${CMAKE_BINARY_DIR}/GLTF/dependencies/rapidjson/include")
+
+add_library(LIB_GLTF STATIC IMPORTED)
+add_dependencies(LIB_GLTF GLTF)
+set_target_properties(GLTF PROPERTIES 
+  IMPORTED_LOCATION "${GLTF_LIBRARY_PATH}"
+  INTERFACE_INCLUDE_DIRECTORIES "${GLTF_INCLUDE_DIR} ${RAPIDJSON_INCLUDE_DIR}"
+  INTERFACE_LINK_LIBRARIES "${GLTF_LIBRARY_DIR}"
+)
+
+# cpp-LINQ
+ExternalProject_Add(LINQ
+  GIT_REPOSITORY https://github.com/coveo/LINQ.git
   GIT_TAG v2.0.2
-  PREFIX linq
+  PREFIX LINQ
   INSTALL_DIR
   CMAKE_ARGS
   -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -66,6 +133,15 @@ ExternalProject_Add(linq
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
 )
+
+set(LINQ_INCLUDE_DIR          "${CMAKE_BINARY_DIR}/LINQ/src/LINQ/lib")
+
+add_library(LIB_LINQ INTERFACE IMPORTED)
+add_dependencies(LIB_LINQ LINQ)
+set_target_properties(LIB_LINQ PROPERTIES 
+  INTERFACE_INCLUDE_DIRECTORIES ${LINQ_INCLUDE_DIR}
+)
+
 
 # GSL
 ExternalProject_Add(GSL
@@ -77,11 +153,19 @@ ExternalProject_Add(GSL
 	-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 )
 
+set(GSL_INCLUDE_DIR           "${CMAKE_BINARY_DIR}/GSL/include")
+
+add_library(LIB_GSL INTERFACE IMPORTED)
+add_dependencies(LIB_GSL GSL)
+set_target_properties(LIB_GSL PROPERTIES 
+  INTERFACE_INCLUDE_DIRECTORIES ${GSL_INCLUDE_DIR}
+)
+
 # filesystem
-ExternalProject_Add(filesystem
+ExternalProject_Add(FS
   GIT_REPOSITORY https://github.com/WonderMediaProductions/filesystem
   GIT_TAG maya2glTF
-  PREFIX filesystem
+  PREFIX FS
   INSTALL_DIR
   CMAKE_ARGS
 	-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
@@ -90,55 +174,58 @@ ExternalProject_Add(filesystem
   INSTALL_COMMAND ""
 )
 
+set(FS_INCLUDE_DIR            "${CMAKE_BINARY_DIR}/FS/src/FS")
 
-set(GLTF_INCLUDE_DIR          "${CMAKE_BINARY_DIR}/COLLADA2GLTF/src/COLLADA2GLTF/GLTF/include")
-set(DRACO_INCLUDE_DIR         "${CMAKE_BINARY_DIR}/COLLADA2GLTF/src/COLLADA2GLTF/GLTF/dependencies/draco/src")
-set(RAPIDJSON_INCLUDE_DIR     "${CMAKE_BINARY_DIR}/COLLADA2GLTF/src/COLLADA2GLTF/GLTF/dependencies/rapidjson/include")
-#set(COLLADA2GLTF_INCLUDE_DIR  "${CMAKE_BINARY_DIR}/COLLADA2GLTF/include")
-set(GSL_INCLUDE_DIR           "${CMAKE_BINARY_DIR}/GSL/include")
-set(LINQ_INCLUDE_DIR          "${CMAKE_BINARY_DIR}/linq/src/linq/lib")
-set(FS_INCLUDE_DIR            "${CMAKE_BINARY_DIR}/filesystem/src/filesystem")
+add_library(LIB_FS INTERFACE IMPORTED)
+add_dependencies(LIB_FS FS)
+set_target_properties(LIB_FS PROPERTIES 
+  INTERFACE_INCLUDE_DIRECTORIES ${FS_INCLUDE_DIR}
+)
 
-# TODO: It seems the gltf.lib is not installed by COLLADA2GLTF, although draco.lib is? Figure out why
-ExternalProject_Get_Property(COLLADA2GLTF binary_dir)
-message("Using ${binary_dir} as GLTF target folder")
-set(GLTF_LIBRARY_DIR "${binary_dir}") 
-set(DRACO_LIBRARY_DIR "${binary_dir}/dependencies/draco") 
-
+# maya2glTF
 file(GLOB SOURCES "src/*.cpp" "src/*.h" "src/*.c")
 
-if (MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Yuexternals.h")
-  set_source_files_properties(src/externals.cpp PROPERTIES COMPILE_FLAGS "/Ycexternals.h")
-  set_source_files_properties(src/mikktspace.c  PROPERTIES COMPILE_FLAGS "/Y-")
-endif()
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 include_directories(
   ${GLTF_INCLUDE_DIR}
-  ${DRACO_INCLUDE_DIR}
   ${RAPIDJSON_INCLUDE_DIR}
-  ${GSL_INCLUDE_DIR}
   ${MAYA_INCLUDE_DIR}
   ${LINQ_INCLUDE_DIR}
+  ${GSL_INCLUDE_DIR}
   ${FS_INCLUDE_DIR}
 )
 
 link_directories(
   ${MAYA_LIBRARY_DIR}
   ${GLTF_LIBRARY_DIR}
-  ${DRACO_LIBRARY_DIR}
 )
 
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+if (MSVC)
+  # TODO: Test!
+  add_custom_target(PCH "echo no PCH target")
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/Yuexternals.h")
+  set_source_files_properties(src/externals.cpp PROPERTIES COMPILE_FLAGS "/Ycexternals.h")
+  set_source_files_properties(src/mikktspace.c  PROPERTIES COMPILE_FLAGS "/Y-")
+else()
+  add_clang_pch(PCH "src/externals.h" "src/externals.cpp" "${MAYA_COMPILE_DEFINITIONS}")
+  use_clang_pch(${PROJECT_NAME} PCH)
+  set_source_files_properties(src/mikktspace.c PROPERTIES COMPILE_FLAGS COMPILE_FLAGS "")
+endif()
+
+add_dependencies(PCH_trigger
+  LIB_GLTF
+  LIB_LINQ
+  LIB_FS
+  LIB_GSL
+)
 
 add_dependencies(${PROJECT_NAME}
-  GSL
-  COLLADA2GLTF
-  linq
-  filesystem
+  PCH
 )
 
-target_link_libraries(${PROJECT_NAME} ${MAYA_LIBRARIES} GLTF draco)
+target_link_libraries(${PROJECT_NAME} ${MAYA_LIBRARIES} LIB_GLTF)
 
 # Get the current working branch
 execute_process(
