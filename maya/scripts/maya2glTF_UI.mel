@@ -300,6 +300,10 @@ global proc maya2glTF_UI()
 
     columnLayout -adjustableColumn true -rowSpacing 10; 
 
+    string $exportFLD = `button -label "export selected meshes placeholder"`;
+
+    separator;
+
     button -label "assign PBR shader to selection" -command "maya2glTF_assignPbrShader();";
     button -label "ignore selected mesh deformers" -command "maya2glTF_ignoreSelectedDeformers();";
 
@@ -366,7 +370,7 @@ global proc maya2glTF_UI()
         -s(_quoted($visOnlyFLD))
          "maya2glTF_onExport(^1s, ^2s, ^3s, ^4s, ^5s, ^6s, ^7s, ^8s, ^9s, ^10s);"`;
 
-    button -label "export selected meshes" -command $exportCMD -bgc  (50/255.0) (120/255.0) (70/255.0);
+    button -edit -label "export selected meshes" -command $exportCMD -bgc  (50/255.0) (120/255.0) (70/255.0) $exportFLD;
 
     separator;
 
