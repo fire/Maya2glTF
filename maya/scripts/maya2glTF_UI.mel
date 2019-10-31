@@ -302,49 +302,45 @@ global proc maya2glTF_UI()
     int $selOnly = _getInt("selOnly", 1);
     int $visOnly = _getInt("visOnly", 1);
     int $exportAll = _getInt("exportAll", 1);
-    select -r `listTransforms -geometry`;
+
+    // Begin UI layout
 
     window -title ("maya2glTF") maya2glTF_exporter_window;
 
     string $header = "Copyright (C)" + $year + " wondermedia.tv         Version " + maya2glTF_version();
 
     string $frame = `frameLayout -mw 30 -mh 30 ($header)`;
+    string $frameColumn = `columnLayout -adjustableColumn true -parent $frame -rowSpacing 10`;
+    
+    string $sceneNameFLD = `textFieldGrp -text $sceneName -label "Scene Name:" -parent $frameColumn`;    
+    string $folderFLD = `textFieldGrp -fileName $exportDir -label "Output Folder:" -parent $frameColumn`;
+    string $copyrightFLD = `textFieldGrp -text $copyright -label "Copyright:" -parent $frameColumn`;
+    string $exportAllFLD = `checkBoxGrp -value1 $exportAll -label "Export all:" -parent $frameColumn`;
+    string $exportFLD = `button -label "Export Meshes Placeholder" -parent $frameColumn`;    
 
-    columnLayout -adjustableColumn true -rowSpacing 10; 
+    string $pbrShaderFrame = `frameLayout -collapsable true -label "PBR Shader" -parent $frameColumn`;
+    string $pbrColumn = `columnLayout -adjustableColumn true -parent $pbrShaderFrame -rowSpacing 10`;
+    
+    separator -style "none" -parent $pbrColumn;
 
-    string $sceneNameFLD = `textFieldGrp -text $sceneName -label "Scene Name:" -adjustableColumn 2`;    
-    string $folderFLD = `textFieldGrp -fileName $exportDir -label "Output Folder:" -adjustableColumn 2`;
-    string $copyrightFLD = `textFieldGrp -text $copyright -label "Copyright:" -adjustableColumn 2`;
-    string $exportAllFLD = `checkBoxGrp -value1 $exportAll -label "Export all:"`;
-    string $exportFLD = `button -label "Export Meshes Placeholder"`;    
+    button -label "assign PBR shader to selection" -command "maya2glTF_assignPbrShader();" -parent $pbrColumn;    
 
-    separator;
+    string $animationFrame = `frameLayout -collapsable true -label "Animations" -parent $frameColumn`;
+    string $animationColumn = `columnLayout -adjustableColumn true -parent $animationFrame -rowSpacing 10`;
+        
+    separator -style "none" -parent $animationColumn;
 
-    button -label "assign PBR shader to selection" -command "maya2glTF_assignPbrShader();";
-    button -label "ignore selected mesh deformers" -command "maya2glTF_ignoreSelectedDeformers();";
-
-    separator;
-
-    button -label "select all polygon meshes" -command "maya2glTF_polySelectAndFrame();" -bgc (60/255.0) (80/255.0) (120/255.0);
-
-    separator;
-    string $scaleFLD = `floatFieldGrp -precision 6 -value1 $scale -label "scale factor:"`;
-    string $selOnlyFLD = `checkBoxGrp -value1 $selOnly -label "selected only?" -annotation "Export just the selected nodes, or also include the hierarchy underneath them?"`;
-    string $visOnlyFLD = `checkBoxGrp -value1 $visOnly -label "visible only?"`;
-
-    string $flagsFLD = `textFieldGrp -text $flags -label "extra flags:" -adjustableColumn 2 `;
-
-    string $animFLD = `optionMenuGrp -label "animation:" -adjustableColumn 2`;
+    string $animFLD = `optionMenuGrp -label "animation:" -parent $animationColumn`;
         menuItem -label "none";
         menuItem -label "time slider";
         menuItem -label "range slider";
 
     if (size($chars) > 0)
-        menuItem -label "trax";	
+        menuItem -label "trax" -parent $animationColumn;	
 
-    string $clipFLD = `textFieldGrp -label "clip name:" -text $clip -enable 0 -adjustableColumn 2`;
+    string $clipFLD = `textFieldGrp -label "clip name:" -text $clip -enable 0 -parent $animationColumn`;
 
-    string $charFLD = `optionMenuGrp -label "character:" -enable 0 -adjustableColumn 2`;
+    string $charFLD = `optionMenuGrp -label "character:" -enable 0 -parent $animationColumn`;
     
     for ($c in $chars)
         menuItem -label $c;
@@ -367,6 +363,29 @@ global proc maya2glTF_UI()
     catch(`optionMenuGrp -edit -select $anim $animFLD`);
     catch(`eval $animCMD`);
 
+    string $presetOptionsFrame = `frameLayout -collapsable true -label "Preset Options" -parent $frameColumn`;
+    string $presetOptionsColumn = `columnLayout -parent $presetOptionsFrame -rowSpacing 10`;
+
+    separator -style "none" -parent $presetOptionsColumn;
+    
+    string $scaleFLD = `floatFieldGrp -precision 6 -value1 $scale -label "scale factor:" -parent $presetOptionsColumn`;
+    string $selOnlyFLD = `checkBoxGrp -value1 $selOnly -label "selected only?" -annotation "Export just the selected nodes, or also include the hierarchy underneath them?" -parent $presetOptionsColumn`;
+    string $visOnlyFLD = `checkBoxGrp -value1 $visOnly -label "visible only?" -parent $presetOptionsColumn`;
+    string $flagsFLD = `textFieldGrp -text $flags -label "extra flags:" -parent $presetOptionsColumn`;
+
+    string $advancedOptionsFrame = `frameLayout -collapsable true -label "Advanced Options (Use with care!)" -parent $frameColumn`;
+    string $advancedOptionsColumn = `columnLayout -adjustableColumn true -parent $advancedOptionsFrame -rowSpacing 10`;
+    
+    separator -style "none" -parent $advancedOptionsColumn;
+    
+    button -label "ignore selected mesh deformers" -command "maya2glTF_ignoreSelectedDeformers();" -parent $advancedOptionsColumn;
+
+    button -label "select all polygon meshes" -command "maya2glTF_polySelectAndFrame();" -bgc (60/255.0) (80/255.0) (120/255.0) -parent $advancedOptionsColumn;
+
+    button -label "reset to default values" -command "evalDeferred(\"maya2glTF_resetUI();\");" -parent $advancedOptionsColumn;   
+
+    // End of UI layout
+
     string $exportCMD = `format 
         -s(_quoted($copyrightFLD)) 
         -s(_quoted($folderFLD)) 
@@ -386,9 +405,5 @@ global proc maya2glTF_UI()
 
     button -edit -label "Export Meshes" -command $exportCMD -bgc  (50/255.0) (120/255.0) (70/255.0) $exportFLD;
 
-    separator;
-
-    button -label "reset to default values" -command "evalDeferred(\"maya2glTF_resetUI();\");";
-    
     showWindow maya2glTF_exporter_window;
 }
