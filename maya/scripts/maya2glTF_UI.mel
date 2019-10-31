@@ -250,6 +250,8 @@ global proc maya2glTF_onExport
     }
 
     progressBar -edit -endProgress $gMainProgressBar;
+
+    launch -directory $folder;
 }
 
 proc string _getDefaultOutputFolder() {
