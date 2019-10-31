@@ -293,6 +293,7 @@ global proc maya2glTF_UI()
     string $clip = _getStr("clip", "clip");
     int $selOnly = _getInt("selOnly", 1);
     int $visOnly = _getInt("visOnly", 1);
+    select -r `listTransforms -geometry`;
 
     window -title ("maya2glTF") maya2glTF_exporter_window;
 
