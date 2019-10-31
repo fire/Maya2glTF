@@ -129,6 +129,7 @@ global proc maya2glTF_onExport
 , string $charFLD
 , string $selOnlyFLD
 , string $visOnlyFLD
+, string $exportAllFLD
 )
 {
     // This is defined on maya startup
@@ -162,6 +163,7 @@ global proc maya2glTF_onExport
     string $char = `optionMenuGrp -q -v $charFLD`;
     int $selOnly = `checkBoxGrp -q -value1 $selOnlyFLD`;
     int $visOnly = `checkBoxGrp -q -value1 $visOnlyFLD`;
+    int $exportAll = `checkBoxGrp -q -value1 $exportAllFLD`;
 
     // Persist values
     _setStr("outputFolder", $folder);
@@ -173,7 +175,8 @@ global proc maya2glTF_onExport
     _setInt("anim", $anim);
     _setStr("clip", $clip);
     _setInt("selOnly", $selOnly);
-    _setInt("visOnly", $visOnly);
+    _setInt("visOnly", $visOnly);    
+    _setInt("exportAll", $exportAll);
 
     switch ($anim) 
     {
@@ -199,6 +202,11 @@ global proc maya2glTF_onExport
 
     if ($visOnly) {
         $flags += " -vno";
+    }
+
+    if ($exportAll) {
+        select -clear;
+        select -r `listTransforms -geometry`; 
     }
 
     string $cmd = `format 
@@ -293,6 +301,7 @@ global proc maya2glTF_UI()
     string $clip = _getStr("clip", "clip");
     int $selOnly = _getInt("selOnly", 1);
     int $visOnly = _getInt("visOnly", 1);
+    int $exportAll = _getInt("exportAll", 1);
     select -r `listTransforms -geometry`;
 
     window -title ("maya2glTF") maya2glTF_exporter_window;
@@ -306,7 +315,8 @@ global proc maya2glTF_UI()
     string $sceneNameFLD = `textFieldGrp -text $sceneName -label "Scene Name:" -adjustableColumn 2`;    
     string $folderFLD = `textFieldGrp -fileName $exportDir -label "Output Folder:" -adjustableColumn 2`;
     string $copyrightFLD = `textFieldGrp -text $copyright -label "Copyright:" -adjustableColumn 2`;
-    string $exportFLD = `button -label "Export Selected Meshes Placeholder"`;    
+    string $exportAllFLD = `checkBoxGrp -value1 $exportAll -label "Export all:"`;
+    string $exportFLD = `button -label "Export Meshes Placeholder"`;    
 
     separator;
 
@@ -368,9 +378,13 @@ global proc maya2glTF_UI()
         -s(_quoted($charFLD))
         -s(_quoted($selOnlyFLD))
         -s(_quoted($visOnlyFLD))
-         "maya2glTF_onExport(^1s, ^2s, ^3s, ^4s, ^5s, ^6s, ^7s, ^8s, ^9s, ^10s);"`;
+         "maya2glTF_onExport(^1s, ^2s, ^3s, ^4s, ^5s, ^6s, ^7s, ^8s, ^9s, ^10s"`;
 
-    button -edit -label "Export Selected Meshes" -command $exportCMD -bgc  (50/255.0) (120/255.0) (70/255.0) $exportFLD;
+    $exportCMD = $exportCMD + `format
+        -s(_quoted($exportAllFLD))
+        ", ^1s);"`;
+
+    button -edit -label "Export Meshes" -command $exportCMD -bgc  (50/255.0) (120/255.0) (70/255.0) $exportFLD;
 
     separator;
 
