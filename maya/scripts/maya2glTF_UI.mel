@@ -367,7 +367,7 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
     string $visOnlyFLD = `checkBoxGrp -value1 $visOnly -label "visible only?" -parent $presetOptionsColumn`;
     string $flagsFLD = `textFieldGrp -text $flags -label "extra flags:" -parent $presetOptionsColumn`;
 
-    string $advancedOptionsFrame = `frameLayout -collapsable true -label "Advanced Options (Use with care!)" -parent $frameColumn`;
+    string $advancedOptionsFrame = `frameLayout -collapse true -collapsable true -label "Advanced Options (Use with care!)" -parent $frameColumn`;
     string $advancedOptionsColumn = `columnLayout -adjustableColumn true -parent $advancedOptionsFrame -rowSpacing 10`;
     
     separator -style "none" -parent $advancedOptionsColumn;
