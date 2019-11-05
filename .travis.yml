@@ -8,10 +8,10 @@ compiler:
   - gcc
   - clang
 
-addons:
-  apt:
-    packages:
-      - cmake
+#addons:
+#  apt:
+#    packages:
+#      - cmake
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update          ; fi
