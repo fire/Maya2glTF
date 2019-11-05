@@ -16,7 +16,7 @@ compiler:
 
 script:
   - git clone https://github.com/fire/Maya2glTF-dev-kits.git
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then MAYA_LOCATION+=TRAVIS_BUILD_DIR cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then MAYA_LOCATION+=$TRAVIS_BUILD_DIR cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd build && make; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then MAYA_LOCATION+=TRAVIS_BUILD_DIR cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then MAYA_LOCATION+=$TRAVIS_BUILD_DIR cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd build && make; fi
