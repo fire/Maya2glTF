@@ -1,19 +1,26 @@
 language: cpp
 
-os:
-  - linux
-  - osx
+jobs:
+  include:
+    - os: linux
+      env: MAYA2GLTF_MAYA=2018 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2018_6_Update_DEVKIT_Linux/devkitBase/
+      compiler: clang
+    - os: linux
+      env: MAYA2GLTF_MAYA=2019 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Linux/devkitBase/
+      compiler: clang
+    - os: osx
+      env: MAYA2GLTF_MAYA=2018 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2018_6_Update_DEVKIT_Mac/devkitBase/
+      compiler: clang
+    - os: osx
+      env: MAYA2GLTF_MAYA=2019 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Mac/devkitBase/
+      compiler: clang
 
-compiler:
-  - clang
 
-env:
-  - MAYA2GLTF_MAYA=2018 MAYA2GLTF_DIR=Autodesk_Maya_2018_6_Update
-  - MAYA2GLTF_MAYA=2019 MAYA2GLTF_DIR=Autodesk_Maya_2019_2_Update
+  - MAYA2GLTF_MAYA=2019 MAYA2GLTF_DIR=Maya2glTF-dev-kits/_DEVKIT_Linux/devkitBase/
 
 script:
   - git clone https://github.com/fire/Maya2glTF-dev-kits.git
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then MAYA_LOCATION=Maya2glTF-dev-kits/`echo $MAYA2GLTF_DIR`_DEVKIT_Mac/ cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd build && make; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then MAYA_LOCATION=Maya2glTF-dev-kits/`echo $MAYA2GLTF_DIR`_DEVKIT_Linux/devkitBase/ cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$MAYA2GLTF_MAYA .; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cd build && make; fi
