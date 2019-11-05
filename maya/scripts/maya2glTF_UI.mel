@@ -293,8 +293,8 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
     string $char = _getStr("char", $chars[0]);
     int $anim = _getInt("anim", 1);
     string $clip = _getStr("clip", $sceneName);
-    int $selOnly = _getInt("selOnly", 1);
-    int $visOnly = _getInt("visOnly", 1);
+    int $selOnly = _getInt("selOnly", 0);
+    int $visOnly = _getInt("visOnly", 0);
     int $exportAll = _getInt("exportAll", 1);
 
     // Begin UI layout
