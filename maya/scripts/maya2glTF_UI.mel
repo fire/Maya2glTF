@@ -357,6 +357,9 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
     catch(`optionMenuGrp -edit -select $anim $animFLD`);
     catch(`eval $animCMD`);
 
+    optionMenuGrp -edit -select 2 $animFLD;
+    eval $animCMD;
+
     string $presetOptionsFrame = `frameLayout -collapsable true -label "Preset Options" -parent $frameColumn`;
     string $presetOptionsColumn = `columnLayout -parent $presetOptionsFrame -rowSpacing 10`;
 
