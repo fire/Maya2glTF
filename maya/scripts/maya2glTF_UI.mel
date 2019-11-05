@@ -317,22 +317,22 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
     
     separator -style "none" -parent $pbrColumn;
 
-    button -label "assign PBR shader to selection" -command "maya2glTF_assignPbrShader();" -parent $pbrColumn;    
+    button -label "Assign PBR Shader to Selection" -command "maya2glTF_assignPbrShader();" -parent $pbrColumn;    
 
     string $animationFrame = `frameLayout -collapsable true -label "Animations" -parent $frameColumn`;
     string $animationColumn = `columnLayout -adjustableColumn true -parent $animationFrame -rowSpacing 10`;
         
     separator -style "none" -parent $animationColumn;
 
-    string $animFLD = `optionMenuGrp -label "animation:" -parent $animationColumn`;
-        menuItem -label "none";
-        menuItem -label "time slider";
-        menuItem -label "range slider";
+    string $animFLD = `optionMenuGrp -label "Animation:" -parent $animationColumn`;
+        menuItem -label "None";
+        menuItem -label "Time Slider";
+        menuItem -label "Range Slider";
 
     if (size($chars) > 0)
-        menuItem -label "trax" -parent $animationColumn;	
+        menuItem -label "Trax" -parent $animationColumn;	
 
-    string $clipFLD = `textFieldGrp -label "clip name:" -text $clip -enable 0 -parent $animationColumn`;
+    string $clipFLD = `textFieldGrp -label "Clip Name:" -text $clip -enable 0 -parent $animationColumn`;
 
     string $charFLD = `optionMenuGrp -label "character:" -enable 0 -parent $animationColumn`;
     
@@ -365,10 +365,10 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
 
     separator -style "none" -parent $presetOptionsColumn;
     
-    string $scaleFLD = `floatFieldGrp -precision 6 -value1 $scale -label "scale factor:" -parent $presetOptionsColumn`;
-    string $selOnlyFLD = `checkBoxGrp -value1 $selOnly -label "selected only?" -annotation "Export just the selected nodes, or also include the hierarchy underneath them?" -parent $presetOptionsColumn`;
-    string $visOnlyFLD = `checkBoxGrp -value1 $visOnly -label "visible only?" -parent $presetOptionsColumn`;
-    string $flagsFLD = `textFieldGrp -text $flags -label "extra flags:" -parent $presetOptionsColumn`;
+    string $scaleFLD = `floatFieldGrp -precision 6 -value1 $scale -label "Scale Factor:" -parent $presetOptionsColumn`;
+    string $selOnlyFLD = `checkBoxGrp -value1 $selOnly -label "Selected Only:" -annotation "Export just the selected nodes, or also include the hierarchy underneath them?" -parent $presetOptionsColumn`;
+    string $visOnlyFLD = `checkBoxGrp -value1 $visOnly -label "Visible Only:" -parent $presetOptionsColumn`;
+    string $flagsFLD = `textFieldGrp -text $flags -label "Extra Flags:" -parent $presetOptionsColumn`;
 
     string $advancedOptionsFrame = `frameLayout -collapse true -collapsable true -label "Advanced Options (Use with care!)" -parent $frameColumn`;
     string $advancedOptionsColumn = `columnLayout -adjustableColumn true -parent $advancedOptionsFrame -rowSpacing 10`;
