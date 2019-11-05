@@ -299,7 +299,7 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
 
     // Begin UI layout
 
-    window -title ("maya2glTF") maya2glTF_exporter_window;
+    window -title ("maya2glTF") -sizeable false maya2glTF_exporter_window;
 
     string $header = "Copyright (C)" + $year + " wondermedia.tv         Version " + maya2glTF_version();
 
