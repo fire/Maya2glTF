@@ -204,15 +204,32 @@ elseif(APPLE)
     DESTINATION "/Users/Shared/Autodesk/maya/maya2glTF/PBR"
   )
 else(LINUX)
-  add_custom_command(TARGET maya2glTF POST_BUILD
-    COMMAND mkdir -p "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/plug-ins/>"
-    COMMAND mkdir -p "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/scripts/>"
-    COMMAND mkdir -p "$<SHELL_PATH:$ENV{HOME}/maya/maya2glTF/PBR/>"
-    COMMAND cp -f "$<SHELL_PATH:$<TARGET_FILE:maya2glTF>>" "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/plug-ins/>"
-    COMMAND cp -f "$<SHELL_PATH:${CMAKE_CURRENT_BINARY_DIR}/maya2glTF_version.mel>" "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/scripts/>"      
-    COMMAND cp -f "$<SHELL_PATH:${PROJECT_SOURCE_DIR}/maya/scripts/maya2glTF*.mel>" "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/scripts/>"
-    COMMAND cp -rf "$<SHELL_PATH:${PROJECT_SOURCE_DIR}/maya/renderData/>" "$<SHELL_PATH:$ENV{HOME}/maya/maya2glTF/PBR/>"
-  )
+    install (
+      TARGETS maya2glTF 
+      DESTINATION "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/plug-ins/>"
+    )
+    
+    install (
+      FILES "${CMAKE_CURRENT_BINARY_DIR}/maya2glTF_version.mel" 
+      DESTINATION "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/scripts/>"
+    )
+    
+    install (
+      DIRECTORY "${PROJECT_SOURCE_DIR}/maya/scripts/" 
+      DESTINATION "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/scripts/>"
+      FILES_MATCHING PATTERN "maya2glTF*.mel"
+    )
+
+    install (
+      DIRECTORY "${CMAKE_BINARY_DIR}/generated/" 
+      DESTINATION "$<SHELL_PATH:$ENV{HOME}/maya/${MAYA_VERSION}/scripts/>"
+      FILES_MATCHING PATTERN "maya2glTF*.mel"
+    )
+
+    install (
+      DIRECTORY "${PROJECT_SOURCE_DIR}/maya/renderData/"
+      DESTINATION "$<SHELL_PATH:$ENV{HOME}/maya/maya2glTF/PBR/>"
+    )
 endif()
 
 MAYA_PLUGIN(${PROJECT_NAME})
