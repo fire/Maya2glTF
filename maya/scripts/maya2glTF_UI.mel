@@ -303,7 +303,7 @@ global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
 
     string $header = "Copyright (C)" + $year + " wondermedia.tv         Version " + maya2glTF_version();
 
-    string $frame = `frameLayout -mh 30 ($header)`;
+    string $frame = `frameLayout -mw 30 -mh 30 ($header)`;
     string $frameColumn = `columnLayout -adjustableColumn true -parent $frame -rowSpacing 10`;
     
     string $sceneNameFLD = `textFieldGrp -text $sceneName -label "Scene Name:" -parent $frameColumn`;    
