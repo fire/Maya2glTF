@@ -32,8 +32,8 @@ set(MAYA_LOCATION ${MAYA_INSTALL_BASE_PATH}/maya${MAYA_VERSION}${MAYA_INSTALL_BA
 # Maya include directory
 find_path(MAYA_INCLUDE_DIR maya/MFn.h
   PATHS
-    ${MAYA_LOCATION}
     $ENV{MAYA_LOCATION}
+    ${MAYA_LOCATION}
   PATH_SUFFIXES
     "include/"
     "devkit/include/"
