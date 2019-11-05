@@ -1,0 +1,8 @@
+source "maya2glTF_common.mel";
+source "maya2glTF_animachine.mel";
+source "maya2glTF_version.mel";
+source "maya2glTF_UI.mel";
+
+global proc maya2glTF_UI_GodotEngine() {
+    maya2glTF_UI_preset("Godot Engine");
+}

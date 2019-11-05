@@ -274,13 +274,7 @@ proc string _getDefaultSceneName() {
     return size($sceneName) == 0 ? "untitled" : $sceneName;
 }
 
-global proc maya2glTF_resetUI() {
-    _deleteScriptNode();
-    maya2glTF_UI();
-}
-
-global proc maya2glTF_UI()
-{
+global proc maya2glTF_UI_preset(string $maya2glTF_preset) {
     // This is defined on maya startup
     global string $gMainProgressBar;  
     
@@ -386,6 +380,11 @@ global proc maya2glTF_UI()
 
     // End of UI layout
 
+    if ($maya2glTF_preset == "Godot Engine") {
+        floatFieldGrp -edit -value1 0.01 $scaleFLD;
+        textFieldGrp -edit -text "-isc -bsf" $flagsFLD;
+    }
+
     string $exportCMD = `format 
         -s(_quoted($copyrightFLD)) 
         -s(_quoted($folderFLD)) 
@@ -406,4 +405,13 @@ global proc maya2glTF_UI()
     button -edit -label "Export Meshes" -command $exportCMD -bgc  (50/255.0) (120/255.0) (70/255.0) $exportFLD;
 
     showWindow maya2glTF_exporter_window;
+}
+
+global proc maya2glTF_UI() {
+    maya2glTF_UI_preset("Default");
+}
+
+global proc maya2glTF_resetUI() {
+    _deleteScriptNode();
+    maya2glTF_UI();
 }
