@@ -1,0 +1,23 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    packages:
+      - cmake
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update          ; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install cmake; fi
+  - git clone https://github.com/fire/Maya2glTF-dev-kits.git
+
+script:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=2019 -D MAYA_INSTALL_BASE_DEFAULT=./Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Mac/; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=2019 -D MAYA_INSTALL_BASE_DEFAULT=./Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Linux/; fi
