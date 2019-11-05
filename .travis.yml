@@ -11,8 +11,8 @@ jobs:
     - os: osx
       env: MAYA2GLTF_MAYA=2019 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Mac/devkitBase/
 
-
-  - MAYA2GLTF_MAYA=2019 MAYA2GLTF_DIR=Maya2glTF-dev-kits/_DEVKIT_Linux/devkitBase/
+compiler:
+  - clang
 
 script:
   - git clone https://github.com/fire/Maya2glTF-dev-kits.git
