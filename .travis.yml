@@ -4,16 +4,12 @@ jobs:
   include:
     - os: linux
       env: MAYA2GLTF_MAYA=2018 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2018_6_Update_DEVKIT_Linux/devkitBase/
-      compiler: clang
     - os: linux
       env: MAYA2GLTF_MAYA=2019 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Linux/devkitBase/
-      compiler: clang
     - os: osx
       env: MAYA2GLTF_MAYA=2018 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2018_6_Update_DEVKIT_Mac/devkitBase/
-      compiler: clang
     - os: osx
       env: MAYA2GLTF_MAYA=2019 MAYA_LOCATION=Maya2glTF-dev-kits/Autodesk_Maya_2019_2_Update_DEVKIT_Mac/devkitBase/
-      compiler: clang
 
 
   - MAYA2GLTF_MAYA=2019 MAYA2GLTF_DIR=Maya2glTF-dev-kits/_DEVKIT_Linux/devkitBase/
