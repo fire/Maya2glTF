@@ -1,1 +1,1 @@
-cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=2019
+cmake -B "build" -G "Unix Makefiles" -D MAYA_VERSION:string=$1

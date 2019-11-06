@@ -194,6 +194,12 @@ elseif(APPLE)
   )
 
   install (
+    DIRECTORY "${PROJECT_SOURCE_DIR}/maya/shelves/" 
+    DESTINATION "$<SHELL_PATH:$ENV{HOME}/Library/Preferences/Autodesk/maya/${MAYA_VERSION}/shelves/>"
+    FILES_MATCHING PATTERN "*.mel"
+  )
+
+  install (
     DIRECTORY "${CMAKE_BINARY_DIR}/generated/" 
     DESTINATION "/Users/Shared/Autodesk/maya/scripts"
     FILES_MATCHING PATTERN "maya2glTF*.mel"

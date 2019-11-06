@@ -1,0 +1,9 @@
+string $install_shelfName = "Maya2glTF";
+int $install_shelfExists = `layout -q -ex $install_shelfName`;
+if ($install_shelfExists == 1) {
+    deleteUI -layout $install_shelfName;
+} 
+addNewShelfTab $install_shelfName;
+shelfButton -annotation "Open maya2glTF Godot Engine Preset"
+    -parent "Maya2glTF"
+    -image2 "absolute.png" -command "maya2glTF_UI_GodotEngine";
